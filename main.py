@@ -2,7 +2,7 @@ import cv2
 import mediapipe as mp
 import pyttsx3
 import time
-
+import requests
 # MediaPipe face detection
 mp_face = mp.solutions.face_detection
 mp_draw = mp.solutions.drawing_utils
@@ -20,6 +20,18 @@ last_seen_time = 0
 
 COOLDOWN = 10          # seconds before greeting again
 ABSENCE_RESET = 3      # seconds face must be gone before reset
+
+esp32_ip = "192.168.4.1"
+def send_command(command):
+    print(f"Sending command: {command} to ESP32 at {esp32_ip}")
+    try:
+        response = requests.get(f"http://{esp32_ip}/{command}", timeout=2)
+        if response.status_code == 200:
+            print("Command sent successfully")
+        else:
+            print(f"Failed to send command, status code: {response.status_code}")
+    except requests.RequestException as e:
+        print(f"Error sending command: {e}")
 
 while True:
     ret, frame = cap.read()
@@ -48,8 +60,10 @@ while True:
             cv2.imshow("Welcome Robot Camera", frame)
             cv2.waitKey(1)
 
-            engine.say("Namaste! Welcome to our school.")
-            engine.runAndWait()
+            send_command('greet_raise')
+            # engine.say("Namaste! Welcome to our school.")
+            # engine.runAndWait()
+
 
             greeted = True
             last_greet_time = current_time
@@ -62,6 +76,16 @@ while True:
         if absence_time < ABSENCE_RESET:
             absence_remaining = round(ABSENCE_RESET - absence_time, 1)
             status_text = f"FACE LOST ({absence_remaining}s reset)"
+
+        elif absence_time - ABSENCE_RESET <=1:
+                status_text = f"FACE LOST (Resetting...)"
+                print("**********************************")
+                print("################Face lost #############")
+                print("################Face lost #############")
+                print("####################################")
+                print("**********************************")
+                print("Status:", status_text)
+                send_command("greet_lower") 
         else:
             greeted = False
             status_text = "READY"
