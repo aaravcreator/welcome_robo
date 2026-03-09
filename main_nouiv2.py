@@ -15,7 +15,7 @@ esp32_ip = "192.168.4.1"
 
 # SERIAL SETTINGS
 SERIAL_PORT = "/dev/cu.usbserial-1130"
- # "dev/ttyUSB0" for linux   # change if needed
+# SERIAL_PORT = "/dev/ttyUSB0" # for linux   # change if needed
 BAUD_RATE = 115200
 
 # ==============================
