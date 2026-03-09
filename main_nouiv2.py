@@ -9,7 +9,7 @@ import serial
 # COMMUNICATION MODE
 # ==============================
 USE_SERIAL = False      # True = Serial , False = WiFi
-
+reset_sent = False
 # WIFI SETTINGS
 esp32_ip = "192.168.4.1"
 
@@ -88,6 +88,7 @@ while True:
     status_text = "NO FACE"
 
     if results.detections:
+        reset_sent = False
 
         last_seen_time = current_time
         print("[INFO] Face detected")
@@ -116,7 +117,7 @@ while True:
             absence_remaining = round(ABSENCE_RESET - absence_time, 1)
             status_text = f"FACE LOST ({absence_remaining}s reset)"
 
-        elif absence_time - ABSENCE_RESET <= 1:
+        elif not reset_sent:
 
             status_text = "FACE LOST (Resetting...)"
 
@@ -126,8 +127,10 @@ while True:
 
             send_command("greet_lower")
 
-        else:
+            reset_sent = True
             greeted = False
+
+        else:
             status_text = "READY"
 
     print(
